@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="DataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="OSecret">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Description" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Key" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Secret" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="LastLogin" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="OToken">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Key" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Token" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Created" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Setting">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Key" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Value" Type="nvarchar(max)" Nullable="false" />
+        </EntityType>
+        <EntityType Name="XToken">
+          <Key>
+            <PropertyRef Name="Username" />
+          </Key>
+          <Property Name="Username" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Token" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Created" Type="datetime" Nullable="false" />
+        </EntityType>
+        <EntityType Name="XUser">
+          <Key>
+            <PropertyRef Name="Username" />
+          </Key>
+          <Property Name="Description" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Username" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Password" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="LastLogin" Type="datetime" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_OToken_OSecret">
+          <End Role="OSecret" Type="Self.OSecret" Multiplicity="1" />
+          <End Role="OToken" Type="Self.OToken" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="OSecret">
+              <PropertyRef Name="Key" />
+            </Principal>
+            <Dependent Role="OToken">
+              <PropertyRef Name="Key" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_XToken_User">
+          <End Role="XUser" Type="Self.XUser" Multiplicity="1" />
+          <End Role="XToken" Type="Self.XToken" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="XUser">
+              <PropertyRef Name="Username" />
+            </Principal>
+            <Dependent Role="XToken">
+              <PropertyRef Name="Username" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="DataModelStoreContainer">
+          <EntitySet Name="OSecret" EntityType="Self.OSecret" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="OToken" EntityType="Self.OToken" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Setting" EntityType="Self.Setting" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="XToken" EntityType="Self.XToken" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="XUser" EntityType="Self.XUser" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_OToken_OSecret" Association="Self.FK_OToken_OSecret">
+            <End Role="OSecret" EntitySet="OSecret" />
+            <End Role="OToken" EntitySet="OToken" />
+          </AssociationSet>
+          <AssociationSet Name="FK_XToken_User" Association="Self.FK_XToken_User">
+            <End Role="XUser" EntitySet="XUser" />
+            <End Role="XToken" EntitySet="XToken" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="DataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="OSecret">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Description" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Key" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Secret" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="LastLogin" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="OToken" Relationship="Self.FK_OToken_OSecret" FromRole="OSecret" ToRole="OToken" />
+        </EntityType>
+        <EntityType Name="OToken">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Key" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Created" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="OSecret" Relationship="Self.FK_OToken_OSecret" FromRole="OToken" ToRole="OSecret" />
+        </EntityType>
+        <EntityType Name="XToken">
+          <Key>
+            <PropertyRef Name="Username" />
+          </Key>
+          <Property Name="Username" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Created" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="XUser" Relationship="Self.FK_XToken_User" FromRole="XToken" ToRole="XUser" />
+        </EntityType>
+        <EntityType Name="XUser">
+          <Key>
+            <PropertyRef Name="Username" />
+          </Key>
+          <Property Name="Description" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Username" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Password" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="LastLogin" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="XToken" Relationship="Self.FK_XToken_User" FromRole="XUser" ToRole="XToken" />
+        </EntityType>
+        <Association Name="FK_OToken_OSecret">
+          <End Role="OSecret" Type="Self.OSecret" Multiplicity="1" />
+          <End Role="OToken" Type="Self.OToken" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="OSecret">
+              <PropertyRef Name="Key" />
+            </Principal>
+            <Dependent Role="OToken">
+              <PropertyRef Name="Key" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_XToken_User">
+          <End Role="XUser" Type="Self.XUser" Multiplicity="1" />
+          <End Role="XToken" Type="Self.XToken" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="XUser">
+              <PropertyRef Name="Username" />
+            </Principal>
+            <Dependent Role="XToken">
+              <PropertyRef Name="Username" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="DataContext" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="OSecrets" EntityType="Self.OSecret" />
+          <EntitySet Name="OTokens" EntityType="Self.OToken" />
+          <EntitySet Name="XTokens" EntityType="Self.XToken" />
+          <EntitySet Name="XUsers" EntityType="Self.XUser" />
+          <AssociationSet Name="FK_OToken_OSecret" Association="Self.FK_OToken_OSecret">
+            <End Role="OSecret" EntitySet="OSecrets" />
+            <End Role="OToken" EntitySet="OTokens" />
+          </AssociationSet>
+          <AssociationSet Name="FK_XToken_User" Association="Self.FK_XToken_User">
+            <End Role="XUser" EntitySet="XUsers" />
+            <End Role="XToken" EntitySet="XTokens" />
+          </AssociationSet>
+          <EntitySet Name="Settings" EntityType="DataModel.Setting" />
+        </EntityContainer>
+        <EntityType Name="Setting">
+          <Key>
+            <PropertyRef Name="Key" />
+          </Key>
+          <Property Name="Key" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="DataModelStoreContainer" CdmEntityContainer="DataContext">
+          <EntitySetMapping Name="OSecrets">
+            <EntityTypeMapping TypeName="DataModel.OSecret">
+              <MappingFragment StoreEntitySet="OSecret">
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
+                <ScalarProperty Name="Secret" ColumnName="Secret" />
+                <ScalarProperty Name="LastLogin" ColumnName="LastLogin" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OTokens">
+            <EntityTypeMapping TypeName="DataModel.OToken">
+              <MappingFragment StoreEntitySet="OToken">
+                <ScalarProperty Name="Key" ColumnName="Key" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="Created" ColumnName="Created" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="XTokens">
+            <EntityTypeMapping TypeName="DataModel.XToken">
+              <MappingFragment StoreEntitySet="XToken">
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="Created" ColumnName="Created" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="XUsers">
+            <EntityTypeMapping TypeName="DataModel.XUser">
+              <MappingFragment StoreEntitySet="XUser">
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Username" ColumnName="Username" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="LastLogin" ColumnName="LastLogin" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Settings">
+            <EntityTypeMapping TypeName="DataModel.Setting">
+              <MappingFragment StoreEntitySet="Setting">
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
