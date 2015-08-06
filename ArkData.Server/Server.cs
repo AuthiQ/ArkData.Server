@@ -54,11 +54,16 @@ namespace ArkData.Server
                 online_refresh.Interval = 180000;
                 online_refresh.Tick += async (sender, e) =>
                 {
-                    lock (containerLock)
-                        container = ArkDataContainer.Create(folder);
-                    await container.LoadSteamAsync(api_key);
-                    await container.LoadOnlinePlayersAsync(ip_address, port);
-                    Program.cfgForm.Log(container.Players.Where(p => p.Online).Count() + " players online.");
+                    try {
+                        lock (containerLock)
+                            container = ArkDataContainer.Create(folder);
+                        await container.LoadSteamAsync(api_key);
+                        await container.LoadOnlinePlayersAsync(ip_address, port);
+                        Program.cfgForm.Log(container.Players.Where(p => p.Online).Count() + " players online.");
+                    } catch(Exception ex)
+                    {
+                        handleException(ex);
+                    }
                 };
                 online_refresh.Start();
 
@@ -69,31 +74,37 @@ namespace ArkData.Server
             }
             catch (System.Exception ex)
             {
-                Program.cfgForm.OpenUI();
-
-                if (ex is System.IO.DirectoryNotFoundException)
-                {
-                    Program.cfgForm.Log("DirectoryNotFoundException Occurred: " + ex.Message);
-                    return;
-                }
-                if (ex is System.IO.FileLoadException)
-                {
-                    Program.cfgForm.Log("FileLoadException Occurred: " + ex.Message);
-                    return;
-                }
-                if (ex is WebException)
-                {
-                    Program.cfgForm.Log("WebException Occurred: " + ex.Message);
-                    return;
-                }
-                if(ex is ServerException)
-                {
-                    Program.cfgForm.Log("ServerException Occurred: " + ex.Message);
-                    return;
-                }
-
-                Program.cfgForm.Log("Exception Occurred: " + ex.Message);
+                handleException(ex);
             }
+        }
+
+        private static void handleException(Exception ex)
+        {
+            Program.cfgForm.OpenUI();
+            Stop();
+
+            if (ex is System.IO.DirectoryNotFoundException)
+            {
+                Program.cfgForm.Log("DirectoryNotFoundException Occurred: " + ex.Message);
+                return;
+            }
+            if (ex is System.IO.FileLoadException)
+            {
+                Program.cfgForm.Log("FileLoadException Occurred: " + ex.Message);
+                return;
+            }
+            if (ex is WebException)
+            {
+                Program.cfgForm.Log("WebException Occurred: " + ex.Message);
+                return;
+            }
+            if (ex is ServerException)
+            {
+                Program.cfgForm.Log("ServerException Occurred: " + ex.Message);
+                return;
+            }
+
+            Program.cfgForm.Log("Exception Occurred: " + ex.Message);
         }
 
         public static void Restart(string folder, string api_key,
@@ -120,6 +131,7 @@ namespace ArkData.Server
             else
             {
                 listener.Stop();
+                online_refresh.Stop();
                 server_running = false;
                 ip_address = string.Empty;
                 port = 0;
