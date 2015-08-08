@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ArkData;
 using System.Net;
+using Microsoft.Owin.Hosting;
 using System.Runtime.Remoting;
 
 namespace ArkData.Server
@@ -16,8 +14,7 @@ namespace ArkData.Server
         public static Object containerLock = new object();
 
         private static Timer online_refresh;
-        private static HttpListener listener;
-        private static Task server_task;
+        private static IDisposable webSvc;
 
         private static bool server_running = false;
         private static string ip_address;
@@ -39,26 +36,22 @@ namespace ArkData.Server
                 Program.cfgForm.Log(container.Players.Where(p => p.Online).Count() + " players online.");
 
                 Program.cfgForm.Log("Starting HTTP server...");
-                listener = new HttpListener();
-                listener.Prefixes.Add(url);
-                listener.Start();
+
+                webSvc = WebApp.Start<ServerStartup>(url);
 
                 server_running = true;
-                server_task = Task.Run(async () =>
-                {
-                    while (server_running)
-                        incoming_request(await listener.GetContextAsync());
-                });
 
                 online_refresh = new Timer();
                 online_refresh.Interval = 180000;
                 online_refresh.Tick += async (sender, e) =>
                 {
                     try {
-                        lock (containerLock)
-                            container = ArkDataContainer.Create(folder);
+                        ArkDataContainer cont;
+                        cont = await ArkDataContainer.CreateAsync(folder);
                         await container.LoadSteamAsync(api_key);
                         await container.LoadOnlinePlayersAsync(ip_address, port);
+                        lock (containerLock)
+                            container = cont;
                         Program.cfgForm.Log(container.Players.Where(p => p.Online).Count() + " players online.");
                     } catch(Exception ex)
                     {
@@ -103,6 +96,15 @@ namespace ArkData.Server
                 Program.cfgForm.Log("ServerException Occurred: " + ex.Message);
                 return;
             }
+            if(ex.InnerException != null)
+            {
+                if(ex.InnerException.Message.Contains("The process cannot access the file because it is being used by another process"))
+                {
+                    Program.cfgForm.Log("Exception Occurred: The server couldn't be started because the port is already in use. " + 
+                        "There are known issues with Skype using port 80, you might want to kill Skype and try again.");
+                }
+                return;
+            }
 
             Program.cfgForm.Log("Exception Occurred: " + ex.Message);
         }
@@ -130,28 +132,13 @@ namespace ArkData.Server
                 return;
             else
             {
-                listener.Stop();
+                webSvc.Dispose();
                 online_refresh.Stop();
+                online_refresh.Dispose();
                 server_running = false;
                 ip_address = string.Empty;
                 port = 0;
             }
-        }
-
-        private static void incoming_request(HttpListenerContext context)
-        {
-            if (context.Request.RawUrl.ToLower().StartsWith("/authenticate"))
-                Request.Authenticate(context.Request, context.Response);
-            if (context.Request.RawUrl.ToLower().StartsWith("/search"))
-                Request.Search(context.Request, context.Response);
-            if (context.Request.RawUrl.ToLower().StartsWith("/player"))
-                Request.Player(context.Request, context.Response);
-            if (context.Request.RawUrl.ToLower().StartsWith("/tribe"))
-                Request.Tribe(context.Request, context.Response);
-            if (context.Request.RawUrl.ToLower().StartsWith("/online"))
-                Request.OnlinePlayers(context.Request, context.Response);
-            else
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
     }
 }
