@@ -16,9 +16,12 @@ namespace ArkData.Server
         private static Timer online_refresh;
         private static IDisposable webSvc;
 
-        private static bool server_running = false;
+        private static string folder;
+        private static string api_key;
         private static string ip_address;
         private static int port;
+
+        private static bool server_running = false;
 
         public static async void Start(string folder, string api_key,
                                 string ip_address, int port, string url)
@@ -45,23 +48,22 @@ namespace ArkData.Server
                 online_refresh.Interval = 180000;
                 online_refresh.Tick += async (sender, e) =>
                 {
-                    try {
+                    try
+                    {
                         ArkDataContainer cont;
                         cont = await ArkDataContainer.CreateAsync(folder);
-                        await container.LoadSteamAsync(api_key);
-                        await container.LoadOnlinePlayersAsync(ip_address, port);
+                        await cont.LoadSteamAsync(api_key);
+                        await cont.LoadOnlinePlayersAsync(ip_address, port);
                         lock (containerLock)
                             container = cont;
                         Program.cfgForm.Log(container.Players.Where(p => p.Online).Count() + " players online.");
-                    } catch(Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         handleException(ex);
                     }
                 };
                 online_refresh.Start();
-
-                Server.ip_address = ip_address;
-                Server.port = port;
 
                 Program.cfgForm.Log("Server is running.");
             }
